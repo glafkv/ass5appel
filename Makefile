@@ -1,19 +1,24 @@
+CC = gcc
+CFLAGS = -g -w
+TARGET1 = oss
+TARGET2 = user
+OBJS1 = oss.o
+OBJS2 = user.o
+.SUFFIXES: .c .o
 all: oss user
 
-oss: oss.o scheduler1.o 
-	gcc oss.o scheduler1.o -o oss
+$(TARGET1): $(OBJS1)
+	$(CC) -o $(TARGET1) $(OBJS1) -lpthread
 
-oss.o: oss.c scheduler.h
-	gcc -c oss.c
+$(TARGET2): $(OBJS2)
+	$(CC) -o $(TARGET2) $(OBJS2) -lpthread
 
-scheduler1.o: scheduler1.c scheduler.h
-	gcc -c scheduler1.c
+oss.o: oss.c
+	$(CC) $(CFLAGS) -c oss.c structures.h
 
-user: user.o
-	gcc user.c -o child
-
-child.o: child.c
-	gcc child.c
+user.o: user.c
+	$(CC) $(CFLAGS) -c user.c
 
 clean:
-	rm *.o oss *.txt
+	/bin/rm -f *.o *.txt $(TARGET1) $(TARGET2)
+

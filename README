@@ -1,0 +1,17 @@
+Project 5
+Author: Gabi Appel
+Due Date: 11/10/19
+
+Purpose:
+	Deadlock detection stuff
+
+How to run:
+	
+	make			//to compile
+	./oss			//to run with default settings
+	./oss -h		//to print the help menu
+	./oss -o <filename>	//to specify the output file name
+	./oss -n <x>		//to choose the max number of children. default max is 18.
+	./oss -v		//to print a more verbose output file
+	make clean		//to delete all .o files
+

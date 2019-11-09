@@ -10,6 +10,7 @@
 #include <signal.h>
 #include <time.h>
 
+
 #define resSize 20
 #define available 8
 
@@ -49,9 +50,11 @@ int main(int argc, char * argv[])
 	unsigned int terminates, checkSpanSec = 0;
 	char* ptr;
 	pid_t pid = getpid();
+	//pointer to the shared clock
 	struct clock * shmPTR;
 	signal(SIGINT, intHandler);
 	unsigned long shmID, checkSpanNano;
+	//converts the string to unsigned long integer
 	unsigned long key = strtoul(argv[0], &ptr, 10);
 	unsigned long msgKey = strtoul(argv[1], &ptr, 10);
 	unsigned long msgKey1 = strtoul(argv[2], &ptr, 10);
@@ -59,10 +62,12 @@ int main(int argc, char * argv[])
 	unsigned long logicalNum = strtoul(argv[4], &ptr, 10);
 	shmID = shmget(key, sizeof(struct clock), 0);
 	shmPTR = (struct clock *) shmat(shmID, (void *)0, 0);
+	//create a new message queue
 	msgid = msgget(msgKey, 0777 | IPC_CREAT);
 	msgid1 = msgget(msgKey1, 0777 | IPC_CREAT);
 	msgid2 = msgget(msgKey2, 0777 | IPC_CREAT);
 	checkSpanNano = rand() % 250000;
+	//gets a random time to terminate
 	terminates = rand() % 100;
 	message.msgType = 1;
 	while(terminates > 20 && keepRunning == 1)
@@ -76,6 +81,7 @@ int main(int argc, char * argv[])
 		{
 			if(terminates > 30)
 			{
+				//gets a random resource to terminate
 				message.request[i] = (rand() % shmPTR[0].initialResource[i]);
 				while(message.request[i] + resourcesHeld[i] > shmPTR[0].initialResource[i])
 				{
@@ -108,6 +114,7 @@ int main(int argc, char * argv[])
 			printf("Child %li requesting %d resources, holds %d.\n", logicalNum, message.request[k], resourcesHeld[k]);
 		}
 		msgsnd(msgid, &message, sizeof(message), 0);
+		///wait for a response from oss
 		msgrcv(msgid1, &message, sizeof(message), logicalNum, 0);
 		printf("Child %li receiving message type %li.\n", logicalNum, message.msgType);
 		for(k = 0; k < resSize; k++)
@@ -115,6 +122,7 @@ int main(int argc, char * argv[])
 			resourcesHeld[k] = resourcesHeld[k] + message.granted[k];
 			printf("Child %li granted %d resources, holds %d out of a possible %d.\n", logicalNum, message.granted[k], resourcesHeld[k], shmPTR[0].initialResource[k]);
 		}
+		//incrementing and decrementing the shared timer
 		if(shmPTR[0].nano + checkSpanNano > 1000000000)
 		{
 			checkSpanNano = (checkSpanNano + shmPTR[0].nano) - 1000000000;
@@ -125,6 +133,7 @@ int main(int argc, char * argv[])
 			checkSpanNano = (checkSpanNano + shmPTR[0].nano);
 			checkSpanSec = shmPTR[0].sec;
 		}
+		//picks a random time to terminate
 		if(shmPTR[0].sec > checkSpanSec || (shmPTR[0].sec == checkSpanSec && shmPTR[0].nano >= checkSpanNano))
 			terminates = rand() % 100;
 	}
